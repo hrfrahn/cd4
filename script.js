@@ -91,6 +91,13 @@ function blackMarker(shape){
     fillOpacity: 1}
 }
 
+
+
+var fatal = 0
+var pedCrash = 0
+var bikeCrash = 0
+var ksiCrash = 0
+
 //MO codes: 3003 = ped, 3008 = bike
 
 
@@ -113,6 +120,7 @@ var collisions2019 = new L.GeoJSON.AJAX("layers/2019collisions.geojson", {
             marker.addTo(allcollisions2019)
             marker.addTo(fatalcollisions2019)
             return marker
+
         }
         else{
             if (feature.properties["MO Codes"].includes("3003")){ //ped
@@ -126,6 +134,7 @@ var collisions2019 = new L.GeoJSON.AJAX("layers/2019collisions.geojson", {
             return marker
             
         }
+
     }
 })
 
@@ -237,16 +246,49 @@ var collisions2022 = new L.GeoJSON.AJAX("layers/2022collisions.geojson", {
     }
 })
 
-// collisions2022.on('data:loaded', function(){
-//     markers2022.addLayer(collisions2022)
-//     markers2022.addTo(map)
-// })
+
+var allcollisions2023 = new L.LayerGroup()
+var fatalcollisions2023 = new L.LayerGroup()
+
+var collisions2023 = new L.GeoJSON.AJAX("layers/2023collisions.geojson", {
+    onEachFeature: bindPointPopups,
+    pointToLayer: function(feature, latlng){
+        if(feature.properties["Fatal Crash"] == "True"){
+            
+            if (feature.properties["MO Codes"].includes("3003")){ //ped
+                var marker = L.shapeMarker(latlng, redMarker("triangle"))
+                marker.addTo(allcollisions2023)
+                marker.addTo(fatalcollisions2023)
+                return marker
+            }
+            //not ped so bike
+            var marker = L.circleMarker(latlng, redMarker("circle"))
+            marker.addTo(allcollisions2023)
+            marker.addTo(fatalcollisions2023)
+            return marker
+        }
+        else{
+            if (feature.properties["MO Codes"].includes("3003")){ //ped
+                var marker =  L.shapeMarker(latlng, blackMarker("triangle"))
+                marker.addTo(allcollisions2023)
+                return marker
+            }
+            //not ped so bike
+            var marker =  L.circleMarker(latlng, blackMarker("circle"))
+            marker.addTo(allcollisions2023)
+            return marker
+            
+        }
+    }
+})
 
 
 var dummy2019 = L.marker([0,0])
 var dummy2020 = L.marker([0,0])
 var dummy2021 = L.marker([0,0])
 var dummy2022 = L.marker([0,0])
+var dummy2023 = L.marker([0,0])
+
 
 console.log(fatalcollisions2019)
 
@@ -255,13 +297,15 @@ var overlayMaps = {
     2019: dummy2019, 
     2020: dummy2020,
     2021: dummy2021, 
-    2022: dummy2022
+    2022: dummy2022,
+    2023: dummy2023
 }
 
+console.log(overlayMaps)
 
 var none = L.marker([0,0])
-var allCollisions = new L.LayerGroup([allcollisions2019, allcollisions2020, allcollisions2021, allcollisions2022])
-var fatalCollisions = new L.LayerGroup([fatalcollisions2019, fatalcollisions2020, fatalcollisions2021, fatalcollisions2022])
+var allCollisions = new L.LayerGroup([allcollisions2019, allcollisions2020, allcollisions2021, allcollisions2022, allcollisions2023])
+var fatalCollisions = new L.LayerGroup([fatalcollisions2019, fatalcollisions2020, fatalcollisions2021, fatalcollisions2022, fatalcollisions2023])
 
 var baseMaps = {
     "All Crashes": allCollisions, 
@@ -280,7 +324,7 @@ var legend = L.control({position: 'bottomleft'});
 legend.onAdd = function (map) {
 
     var div = L.DomUtil.create("div", "legend")
-    div.innerHTML += "<b>Legend</b>" + "<br>Triangle = Pedestrian Hit by Car <br>Circle = Biker Hit by Car<br> Red = Fatal Crash"
+    div.innerHTML += "<b>Legend</b>" + "<br>Green = Less Crashes, Red = More Crashes<br>Triangle = Pedestrian Hit by Car <br>Circle = Biker Hit by Car<br> Red Triangle/Circle = Fatal Crash"
     return div
 };
 
@@ -330,6 +374,9 @@ fetch(heatmapURL)
     if(e.name=='2022'){
         markerClusters.addLayer(collisions2022)
     }
+    if(e.name=='2023'){
+        markerClusters.addLayer(collisions2023)
+    }
  })
  map.on('overlayremove', function(e){
     if(e.name=='2019'){
@@ -344,51 +391,43 @@ fetch(heatmapURL)
     if(e.name=='2022'){
         markerClusters.removeLayer(collisions2022)
     }
+    if(e.name=='2023'){
+        markerClusters.removeLayer(collisions2023)
+    }
  })
 
- map.on('baselayerchange', function(e) {
-    console.log(e.name)
-    if(e.name == "All Crashes"){
-        //see which layers are enabled, then add them to the map
-        if(map.hasLayer(dummy2019)){
+//  map.on('baselayerchange', function(e) {
+//     console.log(e.name)
+//     if(e.name == "All Crashes"){
+//         //see which layers are enabled, then add them to the map
+//         if(map.hasLayer(dummy2019)){
             
-        }
-        else{
+//         }
+//         else{
 
-        }
-        if(map.hasLayer(dummy2020)){
+//         }
+//         if(map.hasLayer(dummy2020)){
             
-        }
-        else{
+//         }
+//         else{
 
-        }
-        if(map.hasLayer(dummy2021)){
+//         }
+//         if(map.hasLayer(dummy2021)){
             
-        }
-        else{
+//         }
+//         else{
 
-        }
-        if(map.hasLayer(dummy2022)){
+//         }
+//         if(map.hasLayer(dummy2022)){
             
-        }
-        else{
+//         }
+//         else{
 
-        }
-    }
-});
+//         }
+//     }
+// });
  
-//add legend
 
-// var legend = L.control({position: 'bottomleft'});
-
-// legend.onAdd = function (map) {
-
-//     var div = L.DomUtil.create("div", "legend")
-//     div.innerHTML += "<h4>Legend</h4>"
-//     return div
-// };
-
-// legend.addTo(map);
 
 // add clickable zoom buttons
 resedaVanowen = document.getElementById("rv")
