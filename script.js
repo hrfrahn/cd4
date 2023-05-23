@@ -93,340 +93,160 @@ function blackMarker(shape){
 
 
 
-var fatal = 0
-var pedCrash = 0
-var bikeCrash = 0
-var ksiCrash = 0
+
+//testing backend
+
+
+xhr = new XMLHttpRequest()
+
+xhr.open("GET", "http://localhost:6969/collision_years", true)
+
+xhr.onload = () => {
+    years = JSON.parse(xhr.response)
+    console.log(years)
+
+    var fatal = 0
+    var pedCrash = 0
+    var bikeCrash = 0
+    var ksiCrash = 0
+
+    var collisionsArray = []
+
+    for(i = 0; i < years.length; i++){
+        collisionsArray.push(L.marker([0,0]))
+    }
+
+    for(i = 0; i < years.length; i++){
+
+        filePath = "http://localhost:6969/collisions/"+years[i]
+        collisionsArray[i] = new L.GeoJSON.AJAX(filePath, {
+            onEachFeature: bindPointPopups,
+            pointToLayer: function(feature, latlng){
+                // console.log(fatal)
+                // console.log(bikeCrash)
+                // console.log(pedCrash)
+                // console.log(ksiCrash)
+                //console.log(feature.properties["Date Reported"])
+                //console.log(feature.properties["Victim Age"])
+                //fatal crash
+                if(feature.properties["MO Codes"].includes("3024")){
+                    ksiCrash += 1
+                }
+                if(feature.properties["MO Codes"].includes("3027")){
+                    fatal += 1
+                    if (feature.properties["MO Codes"].includes("3003")){ //ped
+                        pedCrash += 1
+                        var marker = L.shapeMarker(latlng, redMarker("triangle"))
+                        // marker.addTo(allcollisions2019)
+                        // marker.addTo(fatalcollisions2019)
+                        return marker
+                    }
+                    //not ped so bike
+                    bikeCrash+=1
+                    var marker = L.circleMarker(latlng, redMarker("circle"))
+                    // marker.addTo(allcollisions2019)
+                    // marker.addTo(fatalcollisions2019)
+                    return marker
+                }
+                else{
+                    if (feature.properties["MO Codes"].includes("3003")){ //ped
+                        pedCrash += 1
+                        var marker =  L.shapeMarker(latlng, blackMarker("triangle"))
+                        //marker.addTo(allcollisions2019)
+                        return marker
+                    }
+                    //not ped so bike
+                    bikeCrash += 1
+                    var marker =  L.circleMarker(latlng, blackMarker("circle"))
+                   // marker.addTo(allcollisions2019)
+                    return marker
+                    
+                }
+                
+            }
+            
+        })
+        //collisionsArray[i].addTo(map)
+
+    }
+    var markerClusters = L.markerClusterGroup({ maxClusterRadius: 30}).addTo(map);
+
+    var dummyLayers = []
+    for(i = 0; i < years.length; i++){
+        dummyLayers.push(L.marker([0,0]))
+    }
+
+    console.log(dummyLayers)
+
+
+
+    var overlayMaps = {}
+    for(i = 0; i < years.length; i++){
+        overlayMaps[years[i]] = dummyLayers[i]
+    }
+    console.log(overlayMaps)
+
+    var layerControl = L.control.layers(null, overlayMaps, {collapsed : false, position: 'topright'})
+
+    layerControl.addTo(map)
+
+    map.on('overlayadd', function(e){
+        index = years.indexOf(e.name)
+        markerClusters.addLayer(collisionsArray[index])
+    });
+
+    map.on('overlayremove', function(e){
+        index = years.indexOf(e.name)
+        markerClusters.removeLayer(collisionsArray[index])
+    });
+
+    var heatmapURL = "layers/heatmap_smallerkernels.tif"
+
+    fetch(heatmapURL)
+        .then(response => response.arrayBuffer())
+        .then(arrayBuffer => {
+            parseGeoraster(arrayBuffer).then(georaster => {
+            const min = georaster.mins[0];
+            const max = georaster.maxs[0];
+            const range = georaster.ranges[0];
+
+            var scale = chroma.scale(["green", "green", "yellow", "red"]);
+            var layer = new GeoRasterLayer({
+                georaster: georaster,
+                opacity: 0.5,
+                resolution: 128,
+                pixelValuesToColorFn: function(pixelValues) {
+                    var pixelValue = pixelValues[0]; 
+                    // if there's zero density, don't return a color
+                    if (pixelValue < 0.005) return null;
+                    var scaledPixelValue = ((pixelValue - min) / range)+0.3;
+                    var color = scale(scaledPixelValue).hex();
+                    return color;
+                },
+
+            });
+            layerControl.addOverlay(layer, "heatmap")
+            layer.addTo(map)
+        });
+    });
+        
+};
+
+xhr.send(null);
 
 //MO codes: 3003 = ped, 3008 = bike
 
 
-var allcollisions2019 = new L.LayerGroup()
-var fatalcollisions2019 = new L.LayerGroup()
+ var legend = L.control({position: 'bottomleft'});
 
-var collisions2019 = new L.GeoJSON.AJAX("layers/2019collisions.geojson", {
-    onEachFeature: bindPointPopups,
-    pointToLayer: function(feature, latlng){
-        if(feature.properties["Fatal Crash"] == "True"){
-            
-            if (feature.properties["MO Codes"].includes("3003")){ //ped
-                var marker = L.shapeMarker(latlng, redMarker("triangle"))
-                marker.addTo(allcollisions2019)
-                marker.addTo(fatalcollisions2019)
-                return marker
-            }
-            //not ped so bike
-            var marker = L.circleMarker(latlng, redMarker("circle"))
-            marker.addTo(allcollisions2019)
-            marker.addTo(fatalcollisions2019)
-            return marker
-
-        }
-        else{
-            if (feature.properties["MO Codes"].includes("3003")){ //ped
-                var marker =  L.shapeMarker(latlng, blackMarker("triangle"))
-                marker.addTo(allcollisions2019)
-                return marker
-            }
-            //not ped so bike
-            var marker =  L.circleMarker(latlng, blackMarker("circle"))
-            marker.addTo(allcollisions2019)
-            return marker
-            
-        }
-
-    }
-})
-
-var allcollisions2020 = new L.LayerGroup()
-var fatalcollisions2020 = new L.LayerGroup()
-
-var collisions2020 = new L.GeoJSON.AJAX("layers/2020collisions.geojson", {
-    onEachFeature: bindPointPopups,
-    pointToLayer: function(feature, latlng){
-        if(feature.properties["Fatal Crash"] == "True"){
-            
-            if (feature.properties["MO Codes"].includes("3003")){ //ped
-                var marker = L.shapeMarker(latlng, redMarker("triangle"))
-                marker.addTo(allcollisions2020)
-                marker.addTo(fatalcollisions2020)
-                return marker
-            }
-            //not ped so bike
-            var marker = L.circleMarker(latlng, redMarker("circle"))
-            marker.addTo(allcollisions2020)
-            marker.addTo(fatalcollisions2020)
-            return marker
-        }
-        else{
-            if (feature.properties["MO Codes"].includes("3003")){ //ped
-                var marker =  L.shapeMarker(latlng, blackMarker("triangle"))
-                marker.addTo(allcollisions2020)
-                return marker
-            }
-            //not ped so bike
-            var marker =  L.circleMarker(latlng, blackMarker("circle"))
-            marker.addTo(allcollisions2020)
-            return marker
-            
-        }
-    }
-})
-
-
-var allcollisions2021 = new L.LayerGroup()
-var fatalcollisions2021 = new L.LayerGroup()
-
-var collisions2021 = new L.GeoJSON.AJAX("layers/2021collisions.geojson", {
-    onEachFeature: bindPointPopups,
-    pointToLayer: function(feature, latlng){
-        if(feature.properties["Fatal Crash"] == "True"){
-            
-            if (feature.properties["MO Codes"].includes("3003")){ //ped
-                var marker = L.shapeMarker(latlng, redMarker("triangle"))
-                marker.addTo(allcollisions2021)
-                marker.addTo(fatalcollisions2021)
-                return marker
-            }
-            //not ped so bike
-            var marker = L.circleMarker(latlng, redMarker("circle"))
-            marker.addTo(allcollisions2021)
-            marker.addTo(fatalcollisions2021)
-            return marker
-        }
-        else{
-            if (feature.properties["MO Codes"].includes("3003")){ //ped
-                var marker =  L.shapeMarker(latlng, blackMarker("triangle"))
-                marker.addTo(allcollisions2021)
-                return marker
-            }
-            //not ped so bike
-            var marker =  L.circleMarker(latlng, blackMarker("circle"))
-            marker.addTo(allcollisions2021)
-            return marker
-            
-        }
-    }
-})
-
-var allcollisions2022 = new L.LayerGroup()
-var fatalcollisions2022 = new L.LayerGroup()
-
-var markerClusters = L.markerClusterGroup({ maxClusterRadius: 30}).addTo(map);
-
-var collisions2022 = new L.GeoJSON.AJAX("layers/2022collisions.geojson", {
-    onEachFeature: bindPointPopups,
-    pointToLayer: function(feature, latlng){
-        if(feature.properties["Fatal Crash"] == "True"){
-            
-            if (feature.properties["MO Codes"].includes("3003")){ //ped
-                var marker = L.shapeMarker(latlng, redMarker("triangle"))
-                marker.addTo(allcollisions2022)
-                marker.addTo(fatalcollisions2022)
-                return marker
-            }
-            //not ped so bike
-            var marker = L.circleMarker(latlng, redMarker("circle"))
-            marker.addTo(allcollisions2022)
-            marker.addTo(fatalcollisions2022)
-            return marker
-        }
-        else{
-            if (feature.properties["MO Codes"].includes("3003")){ //ped
-                var marker =  L.shapeMarker(latlng, blackMarker("triangle"))
-                marker.addTo(allcollisions2022)
-                return marker
-            }
-            //not ped so bike
-            var marker =  L.circleMarker(latlng, blackMarker("circle"))
-            marker.addTo(allcollisions2022)
-            return marker
-            
-        }
-    }
-})
-
-
-var allcollisions2023 = new L.LayerGroup()
-var fatalcollisions2023 = new L.LayerGroup()
-
-var collisions2023 = new L.GeoJSON.AJAX("layers/2023collisions.geojson", {
-    onEachFeature: bindPointPopups,
-    pointToLayer: function(feature, latlng){
-        if(feature.properties["Fatal Crash"] == "True"){
-            
-            if (feature.properties["MO Codes"].includes("3003")){ //ped
-                var marker = L.shapeMarker(latlng, redMarker("triangle"))
-                marker.addTo(allcollisions2023)
-                marker.addTo(fatalcollisions2023)
-                return marker
-            }
-            //not ped so bike
-            var marker = L.circleMarker(latlng, redMarker("circle"))
-            marker.addTo(allcollisions2023)
-            marker.addTo(fatalcollisions2023)
-            return marker
-        }
-        else{
-            if (feature.properties["MO Codes"].includes("3003")){ //ped
-                var marker =  L.shapeMarker(latlng, blackMarker("triangle"))
-                marker.addTo(allcollisions2023)
-                return marker
-            }
-            //not ped so bike
-            var marker =  L.circleMarker(latlng, blackMarker("circle"))
-            marker.addTo(allcollisions2023)
-            return marker
-            
-        }
-    }
-})
-
-
-var dummy2019 = L.marker([0,0])
-var dummy2020 = L.marker([0,0])
-var dummy2021 = L.marker([0,0])
-var dummy2022 = L.marker([0,0])
-var dummy2023 = L.marker([0,0])
-
-
-console.log(fatalcollisions2019)
-
-
-var overlayMaps = {
-    2019: dummy2019, 
-    2020: dummy2020,
-    2021: dummy2021, 
-    2022: dummy2022,
-    2023: dummy2023
-}
-
-console.log(overlayMaps)
-
-var none = L.marker([0,0])
-var allCollisions = new L.LayerGroup([allcollisions2019, allcollisions2020, allcollisions2021, allcollisions2022, allcollisions2023])
-var fatalCollisions = new L.LayerGroup([fatalcollisions2019, fatalcollisions2020, fatalcollisions2021, fatalcollisions2022, fatalcollisions2023])
-
-var baseMaps = {
-    "All Crashes": allCollisions, 
-    "All Fatal Crashes": fatalCollisions,
-    "None": none
-}
-
-//add control/legend
-
-var layerControl = L.control.layers(baseMaps, overlayMaps, {collapsed : false, position: 'topright'})
-
-layerControl.addTo(map)
-
-var legend = L.control({position: 'bottomleft'});
-
-legend.onAdd = function (map) {
-
-    var div = L.DomUtil.create("div", "legend")
-    div.innerHTML += "<b>Legend</b>" + "<br>Green = Less Crashes, Red = More Crashes<br>Triangle = Pedestrian Hit by Car <br>Circle = Biker Hit by Car<br> Red Triangle/Circle = Fatal Crash"
-    return div
-};
-
-legend.addTo(map);
-
-var heatmapURL = "layers/heatmap_smallerkernels.tif"
-
-fetch(heatmapURL)
-    .then(response => response.arrayBuffer())
-    .then(arrayBuffer => {
-        parseGeoraster(arrayBuffer).then(georaster => {
-        const min = georaster.mins[0];
-        const max = georaster.maxs[0];
-        const range = georaster.ranges[0];
-
-        var scale = chroma.scale(["green", "green", "yellow", "red"]);
-        var layer = new GeoRasterLayer({
-            georaster: georaster,
-            opacity: 0.5,
-            resolution: 128,
-            pixelValuesToColorFn: function(pixelValues) {
-                var pixelValue = pixelValues[0]; 
-                // if there's zero density, don't return a color
-                if (pixelValue < 0.005) return null;
-                var scaledPixelValue = ((pixelValue - min) / range)+0.3;
-                var color = scale(scaledPixelValue).hex();
-                return color;
-              },
-
-        });
-        layerControl.addOverlay(layer, "heatmap")
-        layer.addTo(map)
-    });
- });
-
-
- map.on('overlayadd', function(e){
-    if(e.name=='2019'){
-        markerClusters.addLayer(collisions2019)
-    }
-    if(e.name=='2020'){
-        markerClusters.addLayer(collisions2020)
-    }
-    if(e.name=='2021'){
-        markerClusters.addLayer(collisions2021)
-    }
-    if(e.name=='2022'){
-        markerClusters.addLayer(collisions2022)
-    }
-    if(e.name=='2023'){
-        markerClusters.addLayer(collisions2023)
-    }
- })
- map.on('overlayremove', function(e){
-    if(e.name=='2019'){
-        markerClusters.removeLayer(collisions2019)
-    }
-    if(e.name=='2020'){
-        markerClusters.removeLayer(collisions2020)
-    }
-    if(e.name=='2021'){
-        markerClusters.removeLayer(collisions2021)
-    }
-    if(e.name=='2022'){
-        markerClusters.removeLayer(collisions2022)
-    }
-    if(e.name=='2023'){
-        markerClusters.removeLayer(collisions2023)
-    }
- })
-
-//  map.on('baselayerchange', function(e) {
-//     console.log(e.name)
-//     if(e.name == "All Crashes"){
-//         //see which layers are enabled, then add them to the map
-//         if(map.hasLayer(dummy2019)){
-            
-//         }
-//         else{
-
-//         }
-//         if(map.hasLayer(dummy2020)){
-            
-//         }
-//         else{
-
-//         }
-//         if(map.hasLayer(dummy2021)){
-            
-//         }
-//         else{
-
-//         }
-//         if(map.hasLayer(dummy2022)){
-            
-//         }
-//         else{
-
-//         }
-//     }
-// });
+ legend.onAdd = function (map) {
  
+     var div = L.DomUtil.create("div", "legend")
+     div.innerHTML += "<b>Legend</b>" + "<br>Green = Less Crashes, Red = More Crashes<br>Triangle = Pedestrian Hit by Car <br>Circle = Biker Hit by Car<br> Red Triangle/Circle = Fatal Crash"
+     return div
+ };
+ 
+ legend.addTo(map);
 
 
 // add clickable zoom buttons
@@ -484,3 +304,5 @@ window.onclick = function(event) {
      }
     }
 }
+
+
