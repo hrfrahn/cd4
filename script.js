@@ -102,7 +102,7 @@ function blackMarker(shape){
 
 xhr = new XMLHttpRequest()
 
-xhr.open("GET", "http://hfrahn.pythonanywhere.com/collision_years", true)
+xhr.open("GET", "https://hfrahn.pythonanywhere.com/collision_years", true)
 
 xhr.onload = () => {
     years = JSON.parse(xhr.response)
@@ -121,7 +121,7 @@ xhr.onload = () => {
 
     for(i = 0; i < years.length; i++){
 
-        filePath = "http://hfrahn.pythonanywhere.com/collisions/"+years[i]
+        filePath = "https://hfrahn.pythonanywhere.com/collisions/"+years[i]
         collisionsArray[i] = new L.GeoJSON.AJAX(filePath, {
             onEachFeature: bindPointPopups,
             pointToLayer: function(feature, latlng){
