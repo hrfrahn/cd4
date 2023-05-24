@@ -11,9 +11,9 @@ function bindBoundaryPopups(feature, layer) {
     }
 }
 function bindPointPopups(feature, layer) {
-    if (feature.properties) {
+    if (feature.properties && feature.properties["MO Codes"]) {
         timeStr = feature.properties["Time Occurred"].toString()
-        popupText = "At "+timeStr.slice(0,timeStr.length-2)+":"+timeStr.slice(timeStr.length-2,timeStr.length)+" on "+feature.properties["Date Occurred"]+", a "+feature.properties["Victim Age"]+" year old "
+        popupText = "At "+timeStr.slice(0,timeStr.length-2)+":"+timeStr.slice(timeStr.length-2,timeStr.length)+" on "+feature.properties["Date Occurred"].slice(0,10)+", a "+feature.properties["Victim Age"]+" year old "
         gender = ""
         if(feature.properties["Victim Sex"]=="M"){
             gender = "man "
@@ -37,10 +37,10 @@ function bindPointPopups(feature, layer) {
         }
         popupText += bikePedText
         ksiText = ""
-        if(feature.properties["Fatal Crash"]=="True"){
+        if(feature.properties["MO Codes"].includes("3027")){
             ksiText = " They were killed in the crash."
         }
-        else if(feature.properties["Killed\/Seriusly Injured"]=="True"){
+        else if(feature.properties["MO Codes"].includes("3024")){
             ksiText = " They were seriously injured in the crash."
         }
         else{
@@ -93,13 +93,16 @@ function blackMarker(shape){
 
 
 
+////MO codes: 3003 = ped, 3008 = bike
 
-//testing backend
+
+
+
 
 
 xhr = new XMLHttpRequest()
 
-xhr.open("GET", "http://localhost:6969/collision_years", true)
+xhr.open("GET", "http://hfrahn.pythonanywhere.com/collision_years", true)
 
 xhr.onload = () => {
     years = JSON.parse(xhr.response)
@@ -118,7 +121,7 @@ xhr.onload = () => {
 
     for(i = 0; i < years.length; i++){
 
-        filePath = "http://localhost:6969/collisions/"+years[i]
+        filePath = "http://hfrahn.pythonanywhere.com/collisions/"+years[i]
         collisionsArray[i] = new L.GeoJSON.AJAX(filePath, {
             onEachFeature: bindPointPopups,
             pointToLayer: function(feature, latlng){
@@ -234,7 +237,7 @@ xhr.onload = () => {
 
 xhr.send(null);
 
-//MO codes: 3003 = ped, 3008 = bike
+
 
 
  var legend = L.control({position: 'bottomleft'});
