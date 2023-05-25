@@ -24,7 +24,7 @@
 <body>
     <h1 style = "text-align: center; margin-bottom: 1%;">CD4 Bike and Pedestrian Collisions (2019-2023)</h1>
     <div class = "topWrapper" style="text-align: center;">  
-        <div id = "result-container"></div>
+        <div></div>
         <div class = "two">
             <button class = "modalButton" href = "#projectBackground" style = "margin: 0%; margin-bottom: 1%;">Project Background</button>
             <div id ="projectBackground" class="modal">
@@ -34,14 +34,12 @@
                     <p class="reportText">LA’s 4th Council District (CD4) stretches from San Fernando Valley communities like Sherman Oaks and Reseda, across the Hollywood Hills, and into more centrally located areas like Silver Lake and Los Feliz. The geographically and demographically diverse district contains several major thoroughfares including Ventura Blvd, Mulholland Dr, Los Feliz Blvd, and Laurel Canyon Dr, and these busy streets see many accidents that make them some of the leading contributors to traffic fatalities in the city. The Council Office has identified several locations where street improvements could help improve the safety of non-drivers, and has already completed a number of transit safety projects within the district (including bike lanes on several streets in the Valley). These plans fit in as a broader part of the citywide Vision Zero initiative, which aims to reduce traffic deaths (among drivers and non-drivers) to zero by 2025. So far, however, attempts to reduce deaths have been unsuccessful, with yearly traffic deaths nearly doubling from the 2015 baseline, mostly driven by an increase in pedestrian fatalities.  </p>
                     <p class = "reportText">This failure has led to a renewed call for accelerated street safety programs. It’s common knowledge that Los Angeles is not exactly known for its friendliness to walking or biking; outside of small pockets of walkability, the city’s infrastructure is almost always primarily geared toward driving. This obviously makes it hard to get around without a car, but it also has a huge effect on how safe walking or biking is within our city. Almost every Angeleno has a story of how a crazy driver almost ran them off the road, but we don’t often get beyond these anecdotes when discussing how unsafe this city is for non-drivers.</p>
                     <p class="reportText">This project aims to change that. By using LAPD traffic collision data, we can pinpoint every traffic collision that has taken place within the district going back to 2019. With this knowledge in hand, we can see exactly which intersections are most in need of improvements, which areas have the highest concentration of collisions involving bikers and pedestrians, and which areas of the district are comparatively safe for non-drivers. Through this interactive map, district residents can zoom in to their own neighborhood and get a sense of exactly how safe (or unsafe) it is for them to walk to work, for their kids to bike to school, and for their neighbors and loved ones to live car-free. My hope is that this map and the accompanying intersection reports will help increase public pressure and build the political will to make CD4 (and, eventually, LA as a whole) a great place to live even for those who don’t own a car. </p>
-                    <br><br>
                     <p>All code, writing, and design by Harry Frahn, UCLA '23</p>
+                    <p id = "updateTime">Collisions data updated at </p>
                 </div> 
             </div> 
         </div>
-        <div id = "time-container">
-
-        </div>
+        <div></div>
     </div>
     <div id="map"></div>
     <h2 style = "text-align: center;"> Most Dangerous Intersections Since 2019 (Click to Zoom)</h2>

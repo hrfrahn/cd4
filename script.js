@@ -240,16 +240,16 @@ xhr.send(null);
 
 
 
- var legend = L.control({position: 'bottomleft'});
+var legend = L.control({position: 'bottomleft'});
 
- legend.onAdd = function (map) {
+legend.onAdd = function (map) {
  
      var div = L.DomUtil.create("div", "legend")
      div.innerHTML += "<b>Legend</b>" + "<br>Green = Less Crashes, Red = More Crashes<br>Triangle = Pedestrian Hit by Car <br>Circle = Biker Hit by Car<br> Red Triangle/Circle = Fatal Crash"
      return div
- };
+};
  
- legend.addTo(map);
+legend.addTo(map);
 
 
 // add clickable zoom buttons
@@ -308,4 +308,16 @@ window.onclick = function(event) {
     }
 }
 
+// add most recent updated time
 
+timeXhr = new XMLHttpRequest()
+
+timeXhr.open("GET", "https://hfrahn.pythonanywhere.com/update_time", true)
+
+timeXhr.onload = () => {
+    time = timeXhr.response
+    timeHTML = document.getElementById("updateTime")
+    timeHTML.innerHTML += time
+}
+
+timeXhr.send(null)
