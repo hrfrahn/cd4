@@ -428,11 +428,21 @@ setTimeout(() => {
     yearCounts = []
 
     for(i = 0; i < years.length; i++){
+        keys = Object.keys(collisionsArray[i]._layers)
+        deathCount = 0
+        for(j in keys){
+            layer = collisionsArray[i]._layers[keys[j]]
+            if(layer.feature.properties["MO Codes"].includes("3027")){
+                deathCount +=1
+            }
+        }
         year = {
             number: years[i],
-            count: Object.keys(collisionsArray[i]._layers).length
+            count: keys.length,
+            deaths: deathCount
         }
         yearCounts.push(year)
+        console.log(yearCounts)
     }
 
     yearCounts.sort((a, b) => a.number - b.number)
@@ -515,13 +525,19 @@ setTimeout(() => {
             datasets: [{
                 label: " Crashes",
                 data: yearCounts.map(a => a.count),
+                yAxisID: 'y'
+            }, 
+            {
+                label: " Deaths",
+                data: yearCounts.map(a => a.deaths),
+                yAxisID: 'y1'
             }]
         }, 
         options: {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Annual Crashes'
+                    text: 'Annual Crashes/Deaths'
                 },
                 legend: {
                     labels: {
@@ -530,10 +546,34 @@ setTimeout(() => {
                         }
                     }
                 }
+            }, 
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title:{
+                        display: true, 
+                        text: "Crashes"
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    min: 0,
+                    title:{
+                        display: true, 
+                        text: "Deaths"
+                    },
+                    // grid line settings
+                    grid: {
+                      drawOnChartArea: false, // only want the grid lines for one axis to show up
+                    },
+                },
             }
         }
     })
-
     avgAge = ageSum / totalcrash
 
     ageText = document.getElementById("avgAge")
@@ -603,5 +643,5 @@ setTimeout(() => {
         }
     })
     
-  }, "1000");
+  }, "2000");
   
