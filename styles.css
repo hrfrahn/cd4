@@ -146,3 +146,29 @@ b{
     justify-content: flex-end; */
     text-align: right;
 }
+
+.chartGrid{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    /* grid-template-rows: 1fr 1fr; */
+    grid-template-areas: 
+    "box1 box2 box3"
+    "box4 box5 box6"
+}
+#crashChart{
+    grid-area: box1;
+}
+#modeChart{
+    grid-area: box2;
+}
+#yearChart{
+    grid-area: box3;
+}
+
+#stats{
+    grid-area: box5;
+    font-family: "Anuphan";
+}
+#raceChart{
+    grid-area: box4;
+}
