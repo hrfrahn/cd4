@@ -23,6 +23,24 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <button id = "dialogButton" onclick="showThisDialog()"hidden></button>
+    <dialog id="this-dialog">
+        <p>LAPD has stopped updating their traffic collisions database, which provides the data to power this map. According to their Open Data portal, updates should resume at some point in the future, but it's not clear when. For now, the data on this map only reflects crashes until March 15th, 2025. See <a href="https://data.lacity.org/Public-Safety/Traffic-Collision-Data-from-2010-to-Present/d5tf-ez2w/about_data">here</a> for more info.</p>
+        <div>
+            <button style="margin:auto;display: block;" onclick="hideThisDialog()">Take Me To The Map</button>
+        </div>
+    </dialog>    
+    <script>
+        var dialog = document.querySelector('dialog');
+        function showThisDialog() {
+        document.getElementById('this-dialog').showModal();
+        }
+        function hideThisDialog() {
+        document.getElementById('this-dialog').close();
+        }
+        const button = document.getElementById('dialogButton');
+        button.click();
+    </script>
     <h1 style = "text-align: center; margin-bottom: 1%;">CD4 Bike and Pedestrian Collisions</h1>
     <div class = "topWrapper" style="text-align: center;">  
         <div>

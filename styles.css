@@ -16,6 +16,13 @@ p{
     font-family: 'Anuphan', sans-serif;
 }
 
+dialog{
+    border-radius: 10px;
+    font-family: 'Anuphan', sans-serif;
+    text-align: center;
+    width: 30%;
+}
+
 .caption{
     font-style: italic;
     color: #555;
